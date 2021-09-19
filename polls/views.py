@@ -55,3 +55,11 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+
+def can_or_can_not_access(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+    if question.can_vote():
+        return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+    else:
+        return HttpResponseRedirect(reverse('polls:index'))

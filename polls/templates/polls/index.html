@@ -6,7 +6,7 @@
     {% for question in latest_question_list %}
         <li><b>{{ question.question_text }}</b><br>
         {% if question.can_vote %}
-            <a href="{% url 'polls:detail' question.id %}">vote</a><br>
+            <a href="{% url 'polls:access' question.id %}">vote</a><br>
         {% endif %}
         <a href="{% url 'polls:results' question.id %}">results</a>
         </li>
