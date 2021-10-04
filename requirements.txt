@@ -1,2 +1,3 @@
 # required packages
 coverage
+Django
