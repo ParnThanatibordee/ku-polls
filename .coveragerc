@@ -7,3 +7,5 @@ cover_pylib = False
 omit =
     polls/tests.py
     polls/migrations/*
+    venv
+    manage.py
