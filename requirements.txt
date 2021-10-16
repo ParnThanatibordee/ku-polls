@@ -1,4 +1,4 @@
 # required packages
 coverage
 Django
-decouple
+python-decouple
