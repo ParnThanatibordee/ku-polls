@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
-from  django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
 
 from .models import Choice, Question
 
@@ -23,15 +23,18 @@ class IndexView(generic.ListView):
         ).order_by('-pub_date')[:5]
 
 
-class DetailView(generic.DetailView):
+def detail_view(request, pk):
     """Detail view method."""
 
-    model = Question
-    template_name = 'polls/detail.html'
+    question = get_object_or_404(Question, pk=pk)
+    error_message = "Poll can't vote in this time"
 
-    def get_queryset(self):
-        """Excludes any questions that aren't published yet."""
-        return Question.objects.filter(pub_date__lte=timezone.now())
+    if question.can_vote():
+        return render(request, 'polls/detail.html', {'question': question})
+    else:
+        return render(request, 'polls/index.html', {'error_message': error_message,
+                                                    'latest_question_list': Question.objects.filter(
+                                                        pub_date__lte=timezone.now()).order_by('-pub_date')[:5]})
 
 
 class ResultsView(generic.DetailView):
@@ -61,12 +64,3 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-
-
-def can_or_can_not_access(request, pk):
-    """Access site method."""
-    question = get_object_or_404(Question, pk=pk)
-    if question.can_vote():
-        return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
-    else:
-        return HttpResponseRedirect(reverse('polls:index'))
