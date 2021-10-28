@@ -9,6 +9,11 @@ from django.contrib.auth.decorators import login_required
 
 from .models import Choice, Question
 
+import logging
+from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
+from django.dispatch import receiver
+logger = logging.getLogger("polls")
+
 
 class IndexView(generic.ListView):
     """Index view method."""
@@ -58,9 +63,42 @@ def vote(request, question_id):
             'error_message': "You didn't select a choice.",
         })
     else:
+        vote_event(request, question)
         selected_choice.votes += 1
         selected_choice.save()
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
+
+def get_client_ip(request):
+    """Get the visitor’s IP address using request headers."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+@receiver(user_logged_in)
+def login_event(request, **kwargs):
+    user = request.user
+    logger.info(f'{user}(ip:{get_client_ip(request)}) has a login to the polls.')
+
+
+@receiver(user_logged_out)
+def logout_event(request, **kwargs):
+    user = request.user
+    logger.info(f'{user}(ip:{get_client_ip(request)}) has been logout.')
+
+
+@receiver(user_login_failed)
+def unsuccessful_login_event(request, **kwargs):
+    logger.warning(f'A user has failed to login.')
+
+
+def vote_event(request, question):
+    user = request.user
+    logger.info(f'{user}(ip:{get_client_ip(request)}) has a vote for a question "{question}".')
