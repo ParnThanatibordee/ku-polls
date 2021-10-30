@@ -37,6 +37,8 @@ def detail_view(request, pk):
     another_user_vote = list(Vote.objects.filter(user=user).filter(choice__question=question))
     if len(another_user_vote) > 0:
         latest_vote_choice = another_user_vote[-1].choice
+    else:
+        latest_vote_choice = None
 
     if question.can_vote():
         return render(request, 'polls/detail.html', {'question': question, 'latest_vote_choice': latest_vote_choice})
