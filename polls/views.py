@@ -7,7 +7,7 @@ from django.views import generic
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 
-from .models import Choice, Question
+from .models import Choice, Question, Vote
 
 import logging
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
@@ -63,9 +63,10 @@ def vote(request, question_id):
             'error_message': "You didn't select a choice.",
         })
     else:
+        user = request.user
+        vote = Vote(user=user, choice=selected_choice)
+        vote.save()
         vote_event(request, question)
-        selected_choice.votes += 1
-        selected_choice.save()
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
