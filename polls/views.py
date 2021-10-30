@@ -64,6 +64,14 @@ def vote(request, question_id):
         })
     else:
         user = request.user
+        all_vote = []
+        for choice in question.choice_set.all():
+            for vote in choice.vote_set.all():
+                all_vote.append(vote)
+        another_user_vote = list(Vote.objects.filter(user=user))
+        if len(another_user_vote) > 0:
+            if another_user_vote[-1] in all_vote:
+                another_user_vote[-1].delete()
         vote = Vote(user=user, choice=selected_choice)
         vote.save()
         vote_event(request, question)
