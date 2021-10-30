@@ -31,11 +31,15 @@ class IndexView(generic.ListView):
 def detail_view(request, pk):
     """Detail view method."""
 
+    user = request.user
     question = get_object_or_404(Question, pk=pk)
     error_message = "Poll can't vote in this time"
+    another_user_vote = list(Vote.objects.filter(user=user).filter(choice__question=question))
+    if len(another_user_vote) > 0:
+        latest_vote_choice = another_user_vote[-1].choice
 
     if question.can_vote():
-        return render(request, 'polls/detail.html', {'question': question})
+        return render(request, 'polls/detail.html', {'question': question, 'latest_vote_choice': latest_vote_choice})
     else:
         return render(request, 'polls/index.html', {'error_message': error_message,
                                                     'latest_question_list': Question.objects.filter(
@@ -68,7 +72,7 @@ def vote(request, question_id):
         for choice in question.choice_set.all():
             for vote in choice.vote_set.all():
                 all_vote.append(vote)
-        another_user_vote = list(Vote.objects.filter(user=user))
+        another_user_vote = list(Vote.objects.filter(user=user).filter(choice__question=question))
         if len(another_user_vote) > 0:
             if another_user_vote[-1] in all_vote:
                 another_user_vote[-1].delete()
