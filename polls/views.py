@@ -28,6 +28,7 @@ class IndexView(generic.ListView):
         ).order_by('-pub_date')[:5]
 
 
+@login_required(login_url='/accounts/login/')
 def detail_view(request, pk):
     """Detail view method."""
 
